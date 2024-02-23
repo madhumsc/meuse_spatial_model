@@ -14,6 +14,7 @@ summary(meuse)
 # Check for missing values
 sum(is.na(meuse))
 
+
 # Set up the plot layout
 par(mfrow = c(3, 3), mar = c(2, 2, 1, 1))
 
