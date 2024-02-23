@@ -1,0 +1,110 @@
+# Exploratory Data Analysis of Meuse Dataset
+
+## Introduction
+
+The Meuse dataset contains spatial data on cadmium, copper, and zinc concentrations in soil samples collected from the Meuse River basin in the Netherlands. In this exploratory data analysis (EDA), we will investigate the distribution, relationships, and patterns within the dataset.
+
+## Loading and Preparing Data
+
+```{r,warning=FALSE,message=FALSE}
+# Load necessary libraries
+library(sp)
+library(ggplot2)
+library(corrplot)
+
+# Load the Meuse dataset
+data(meuse)
+
+# Display the first few rows of the dataset
+head(meuse)
+```
+## Data Exploration
+## Overview of the Dataset
+
+
+```{r}
+# Display the structure of the dataset
+str(meuse)
+
+```
+The dataset consists of 155 observations and 13 variables, including spatial coordinates (X and Y) and soil attributes such as cadmium, copper, and zinc concentrations.
+
+## Summary Statistics
+```{r}
+# Summary statistics of numeric variables
+summary(meuse[, -c(1, 4)])
+```
+This summary provides information about the distribution of cadmium, copper, and zinc concentrations, as well as other numeric variables in the dataset.
+
+
+#Spatial Distribution of Variables
+
+```{r,warning=FALSE,message=FALSE}
+# Load necessary libraries
+library(ggplot2)
+# Create spatial plot for cadmium concentration using ggplot2
+ggplot(data = meuse, aes(x = x, y = y, color = cadmium)) +
+  geom_point() +
+  scale_color_gradient(name = "Cadmium", low = "lightblue", high = "darkblue") +
+  labs(title = "Spatial Distribution of Cadmium Concentration")
+
+# Create spatial plot for copper concentration using ggplot2
+ggplot(data = meuse, aes(x = x, y = y, color = copper)) +
+  geom_point() +
+  scale_color_gradient(name = "Copper", low = "lightgreen", high = "darkgreen") +
+  labs(title = "Spatial Distribution of Copper Concentration")
+
+# Create spatial plot for zinc concentration using ggplot2
+ggplot(data = meuse, aes(x = x, y = y, color = zinc)) +
+  geom_point() +
+  scale_color_gradient(name = "Zinc", low = "lightcoral", high = "darkred") +
+  labs(title = "Spatial Distribution of Zinc Concentration")
+
+
+
+```
+These plots visualize the spatial distribution of cadmium, copper, and zinc concentrations across the Meuse River basin.
+
+## Correlation Analysis
+
+```{r}
+
+
+```
+
+The correlation matrix shows the pairwise correlations between the variables in the dataset, indicating potential relationships between soil attributes.
+
+## Scatterplot Matrix
+
+```{r}
+# Create scatterplot matrix
+pairs(meuse[, -c(1, 4)], main = "Scatterplot Matrix of Soil Attributes")
+
+```
+This scatterplot matrix illustrates the relationships between different soil attributes, allowing for visual inspection of potential patterns or trends.
+
+
+# Boxplots of Soil Attributes by Location
+
+```{r}
+# Boxplots of soil attributes by location
+ggplot(meuse, aes(x = factor(1), y = cadmium)) +
+  geom_boxplot(fill = "skyblue", color = "blue") +
+  labs(title = "Boxplot of Cadmium Concentration by Location")
+
+ggplot(meuse, aes(x = factor(1), y = copper)) +
+  geom_boxplot(fill = "lightgreen", color = "darkgreen") +
+  labs(title = "Boxplot of Copper Concentration by Location")
+
+ggplot(meuse, aes(x = factor(1), y = zinc)) +
+  geom_boxplot(fill = "lightcoral", color = "darkred") +
+  labs(title = "Boxplot of Zinc Concentration by Location")
+
+```
+These boxplots show the distribution of cadmium, copper, and zinc concentrations across different locations in the Meuse River basin.
+
+Through exploratory data analysis, we have gained insights into the spatial distribution, correlations, and patterns within the Meuse dataset. Further analysis, such as spatial modeling or environmental risk assessment, can be conducted based on these findings
+
+
+
+

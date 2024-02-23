@@ -1,0 +1,98 @@
+---
+title: "krigling_markdown"
+output: html_document
+date: "2024-02-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,warning=FALSE,message=FALSE}
+library(gstat)
+library(sp)
+library(ggplot2)
+```
+
+
+```{r}
+
+# Load the 'meuse' dataset
+data(meuse)
+
+# Convert the 'meuse' dataframe to a SpatialPointsDataFrame
+coordinates(meuse) <- c("x", "y")
+
+# Define the CRS (Coordinate Reference System) for the 'meuse' dataset
+proj4string(meuse) <- CRS("+init=epsg:28992")  # Dutch Rijksdriehoekstelsel (RD) projection
+
+```
+
+```{r}
+
+# Visualize the 'meuse' dataset
+plot(meuse, pch = 19, col = "blue", main = "Meuse River Basin")
+```
+
+```{r}
+# Fit a variogram to the zinc concentration in the 'meuse' dataset
+v <- variogram(log(zinc) ~ 1, meuse)
+
+# Plot the experimental variogram
+plot(v, main = "Experimental Variogram - Zinc Concentration")
+
+```
+
+```{r}
+
+
+# Fit a variogram model to the experimental variogram
+v.fit <- fit.variogram(v, vgm(psill = 1, model = "Exp", range = 500, nugget = 0.1))
+
+# Plot the experimental variogram with the fitted model
+plot(v, v.fit, main = "Experimental Variogram with Fitted Model - Zinc Concentration")
+
+```
+
+
+```{r}
+# Load the 'meuse' dataset
+data(meuse)
+
+# Convert the 'meuse' dataframe to a SpatialPointsDataFrame
+coordinates(meuse) <- c("x", "y")
+
+# Define the CRS (Coordinate Reference System) for the 'meuse' dataset
+proj4string(meuse) <- CRS("+init=epsg:28992")  # Dutch Rijksdriehoekstelsel (RD) projection
+
+# Create a grid with the same extent and CRS as the 'meuse' dataset
+grid <- sp::spsample(meuse, type = "regular", n = 100)
+
+# Perform kriging
+kriged <- gstat::krige(log(zinc) ~ 1, meuse, grid, model = v.fit)
+
+```
+```{r}
+# Perform kriging
+kriged <- gstat::krige(log(zinc) ~ 1, meuse, grid, model = v.fit)
+
+# Check if the kriging output is not NULL
+if (!is.null(kriged$krige_output)) {
+  # Extract the prediction values from the kriged object
+  pred_values <- kriged$krige_output
+  
+  # Reshape the prediction values into a matrix
+  pred_matrix <- matrix(pred_values, ncol = length(unique(grid@coords[,1])))
+  
+  # Plot the kriging prediction along with the original data points
+  image(pred_matrix, col = terrain.colors(50), main = "Kriging Prediction - Zinc Concentration")
+  points(meuse, pch = 19, col = "blue")
+} else {
+  print("Kriging failed. Please check your input data and variogram model.")
+}
+
+
+
+
+```
+

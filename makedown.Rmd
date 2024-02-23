@@ -1,0 +1,87 @@
+# Load necessary libraries
+library(sp)
+library(ggplot2)
+library(gridExtra)
+library(patchwork)
+
+# Load the 'meuse' dataset
+data(meuse)
+
+# Dataset Overview
+summary(meuse)
+cat("\n")
+cat("The dataset contains spatial data on heavy metal concentrations, soil properties, and land use characteristics.\n\n")
+
+# Scatterplot Matrix
+# Set up custom layout for scatterplot matrix
+num_vars <- names(meuse)[sapply(meuse, is.numeric)]
+num_vars <- num_vars[!num_vars %in% c("x", "y")]  # Exclude x and y coordinates
+n <- length(num_vars)
+cols <- round(sqrt(n))
+rows <- ceiling(n / cols)
+
+# Create scatterplot matrix
+scatterplot_list <- lapply(num_vars, function(var) {
+  ggplot(meuse, aes_string(x = var, y = var)) + geom_point() + ggtitle(var)
+})
+scatterplot_matrix <- wrap_plots(scatterplot_list, ncol = cols)
+print(scatterplot_matrix)
+cat("\n")
+cat("The scatterplot matrix reveals patterns and potential correlations between variables.\n\n")
+
+# Boxplots
+# Create boxplots
+boxplot_list <- lapply(num_vars, function(var) {
+  ggplot(meuse, aes_string(x = 1, y = var)) + geom_boxplot() + ggtitle(paste("Boxplot of", var))
+})
+boxplot_grid <- wrap_plots(boxplot_list, ncol = cols)
+print(boxplot_grid)
+cat("\n")
+cat("The boxplots help visualize the central tendency, spread, and skewness of each variable.\n\n")
+
+# Histograms
+# Create histograms
+histogram_density_list <- lapply(num_vars, function(var) {
+  ggplot(meuse, aes_string(x = var)) + 
+    geom_histogram(binwidth = 2, fill = "lightblue", color = "black") + 
+    labs(x = var, y = "Frequency") + 
+    ggtitle(paste("Histogram of", var)) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))
+})
+histogram_density_grid <- wrap_plots(histogram_density_list, ncol = cols)
+print(histogram_density_grid)
+cat("\n")
+cat("The histograms provide insights into the distributional properties of each variable.\n\n")
+
+# Density Plots
+# Create density plots
+density_plot_list <- lapply(num_vars, function(var) {
+  ggplot(meuse, aes_string(x = var)) + 
+    geom_density(fill = "lightblue", color = "black") + 
+    labs(x = var, y = "Density") + 
+    ggtitle(paste("Density Plot of", var)) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))
+})
+density_plot_grid <- wrap_plots(density_plot_list, ncol = cols)
+print(density_plot_grid)
+cat("\n")
+cat("The density plots provide a smoothed representation of the distribution of each variable.\n\n")
+
+# Scatterplot of Zinc Concentration vs. Distance to River
+ggplot(data = meuse, aes(x = dist, y = zinc)) +
+  geom_point() +
+  labs(x = "Distance to River (m)", y = "Zinc Concentration (ppm)") +
+  ggtitle("Scatterplot of Zinc Concentration vs. Distance to River")
+cat("\n")
+cat("The scatterplot highlights any potential relationship between zinc concentration and distance to the river.\n\n")
+
+# Spatial Plot of Zinc Concentration
+sp::coordinates(meuse) <- c("x", "y")  # Set coordinates
+sp::proj4string(meuse) <- CRS("+init=epsg:28992")  # Define CRS
+
+# Plotting zinc concentrations
+sp::spplot(meuse, "zinc", main = "Zinc Concentrations in the Meuse Dataset")
+cat("\n")
+cat("The spatial plot provides a visual representation of the spatial variation in zinc concentrations.\n")

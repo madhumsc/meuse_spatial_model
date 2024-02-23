@@ -1,0 +1,52 @@
+```{r,warning=FALSE,message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r,warning=FALSE,message=FALSE}
+# Load required packages
+library(sp)
+library(ggplot2)
+library(RColorBrewer)
+library(corrplot)
+```
+
+```{r}
+# Load the meuse dataset
+data(meuse)
+```
+```{r}
+# Scatter plot of heavy metal concentrations
+ggplot(meuse, aes(x = x, y = y)) +
+  geom_point(aes(color = cadmium), size = 3) +
+  scale_color_gradientn(colors = brewer.pal(9, "YlGnBu"), name = "Cadmium") +
+  theme_minimal()
+```
+
+```{r}
+# Scatter plot of heavy metal concentrations
+ggplot(meuse, aes(x = x, y = y)) +
+  geom_point(aes(color = cadmium), size = 3) +
+  scale_color_gradientn(colors = brewer.pal(9, "YlGnBu"), name = "Cadmium") +
+  theme_minimal()
+```
+
+```{r}
+# Correlation matrix
+cor_matrix <- cor(meuse[,c("cadmium", "copper", "lead", "zinc", "elev", "dist")])
+cor_matrix
+```
+
+```{r}
+# Visualizing correlations
+corrplot(cor_matrix, method = "color", type = "upper", order = "hclust", 
+          addrect = 2, tl.cex = 0.8, cl.cex = 0.8)
+```
+
+```{r}
+
+# Spatial plot
+coordinates(meuse) <- ~x + y
+proj4string(meuse) <- CRS("+init=epsg:28992") # Specify the coordinate reference system
+plot(meuse["cadmium"], pch = 19, cex = 1.5, col = terrain.colors(10), main = "Cadmium Concentration")
+```
+
+
