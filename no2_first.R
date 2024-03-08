@@ -1,0 +1,77 @@
+library(gstat)
+library(tidyverse)
+library(viridis)
+library(sf)
+no2 <- read_csv(system.file("external/no2.csv", 
+                            package = "gstat"), show_col_types = FALSE)
+#View(no2)
+
+head(data.frame(no2), 3)
+
+crs <- st_crs("EPSG:32632")
+crs
+no2.sf <- st_as_sf(no2, crs = "OGC:CRS84", coords = 
+                     c("station_longitude_deg", "station_latitude_deg")) |>
+  st_transform(crs) 
+no2.sf
+#https://github.com/thiyangt/spatial-modelling/blob/main/docs/de_nuts1.gpkg
+map <- read_sf("de_nuts1.gpkg") |> st_transform(crs) 
+map
+ggplot() + geom_sf(data = map)
+
+ggplot() + geom_sf(data = map) + 
+  geom_sf(data = no2.sf, mapping = aes(col = NO2)) + 
+  scale_color_viridis()
+
+
+library(stars)
+grid <- st_bbox(map) |>
+  st_as_stars(dx = 10000) |> st_crop(map) 
+grid
+
+library(gstat)
+interpolated.values <- idw(NO2~1, no2.sf, grid)
+
+interpolated.values 
+
+ggplot() + geom_stars(data = interpolated.values, 
+                      aes(fill = var1.pred, x = x, y = y)) + 
+  geom_sf(data = st_cast(map, "MULTILINESTRING")) + 
+  geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
+
+library(patchwork)
+p1 <- ggplot() + geom_sf(data = map) +  geom_sf(data = no2.sf, mapping = aes(col = NO2)) + scale_color_viridis()
+p2 <- ggplot() + geom_stars(data = interpolated.values, 
+                            aes(fill = var1.pred, x = x, y = y)) + geom_sf(data = st_cast(map, "MULTILINESTRING")) + geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
+p1|p2
+
+
+vcloud <- variogram(NO2~1, no2.sf, cloud=TRUE)
+vcloud
+
+ggplot(data=vcloud, aes(x=dist, y=gamma)) + geom_point()
+
+plot(vcloud)
+v2 <- variogram(NO2~1, no2.sf, cutoff = 100000, width = 10000)
+plot(v2, plot.numbers = TRUE, xlab = "distance h [m]",
+     ylab = expression(gamma(h)),
+     xlim = c(0, 1.055 * max(v2$dist)))
+
+vgm()
+
+show.vgms(par.strip.text=list(cex=0.75))
+
+v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
+
+plot(v1, v.m)
+
+v1.ani <- variogram(NO2~1, alpha = c(0, 45, 90, 135), no2.sf)
+v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
+plot(v1.ani, v.m)
+plot(v1.ani)
+
+
+v1.ani <- variogram(NO2~1, alpha = c(0, 45, 90, 135), no2.sf)
+fit.ani <- vgm(psill=20, model = "Exp", range = 25000, nugget = 3, anis = c(30, 10, 0, 0.5, 0.3))
+plot(v1.ani, fit.ani)
+
