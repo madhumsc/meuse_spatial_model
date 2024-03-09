@@ -109,6 +109,47 @@ p2<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
 
 p1|p2
 
+# Calculate Kriging error
+kriging_error <- meuse$zinc - lzn.okriging$var1.pred
 
+# Create a data frame with coordinates and Kriging error
+kriging_error_df <- data.frame(coordinates(meuse.grid), kriging_error = kriging_error)
 
+# Plot Kriging error map
+ggplot(kriging_error_df, aes(x = x, y = y, fill = kriging_error)) +
+  geom_tile() +
+  scale_fill_viridis(name = "Kriging Error") +
+  labs(title = "Kriging Error Map") +
+  theme_minimal() +
+  coord_equal()
+
+# Calculate IDW error
+idw_error <- meuse$zinc - zinc.idw$var1.pred
+
+# Create a data frame with coordinates and IDW error
+idw_error_df <- data.frame(coordinates(meuse.grid), idw_error = idw_error)
+
+# Plot IDW error map
+ggplot(idw_error_df, aes(x = x, y = y, fill = idw_error)) +
+  geom_tile() +
+  scale_fill_viridis(name = "IDW Error") +
+  labs(title = "IDW Error Map") +
+  theme_minimal() +
+  coord_equal()
+
+p3<-ggplot(kriging_error_df, aes(x = x, y = y, fill = kriging_error)) +
+  geom_tile() +
+  scale_fill_viridis(name = "Kriging Error") +
+  labs(title = "Kriging Error Map") +
+  theme_minimal() +
+  coord_equal()
+
+p4<-ggplot(idw_error_df, aes(x = x, y = y, fill = idw_error)) +
+  geom_tile() +
+  scale_fill_viridis(name = "IDW Error") +
+  labs(title = "IDW Error Map") +
+  theme_minimal() +
+  coord_equal()
+
+p3|p4
 
