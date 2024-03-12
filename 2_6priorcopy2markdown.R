@@ -1,42 +1,46 @@
+
+## Load necessary libraries
+###1
 library(gstat)
 library(tidyverse)
 library(viridis)
 library(sf)
 library(stars)
 library(patchwork)
-library(viridis)
 library(ggplot2)
-library(viridis)
+###2
 
-meuse_sf <- st_as_sf(meuse, coords = c("x", "y"))
-data(meuse)
+##loads the dataset named "meuse" into the current R session.check the data type. show the head
+###1
+data("meuse")
 class(meuse)
-# Load necessary libraries
+head(meuse)
+###2
 
 
-# Load the meuse dataset
-data(meuse)
-
-# Convert to sf object
+##Convert the "meuse" dataset to a spatial feature object (sf) with coordinates "x" and "y".
+###1
 meuse_sf <- st_as_sf(meuse, coords = c("x", "y"))
+###2
 
 # Plot using ggplot2 with adjusted parameters
+
+
+###1
 ggplot() +
   geom_sf(data = meuse_sf, aes(color = zinc), size = 2, alpha = 0.7) +
   scale_color_viridis() +
-  theme_minimal() +
+  theme_minimal() + # reduce unnecessary clutter
   theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
         axis.title = element_text(size = 14))  +  # Adjust axis title size
   labs(x = "X Coordinate", y = "Y Coordinate")  # Add axis labels
+###2
 
-
+##Load the "meuse.grid" dataset containing gridded environmental variables for spatial analysis and modeling.
+###1
 data(meuse.grid)
+###2
 
-library(gstat)
-
-# Assuming you have loaded the meuse and meuse.grid datasets
-data(meuse)
-data(meuse.grid)
 
 # Convert to spatial objects
 coordinates(meuse) <- c("x", "y")
