@@ -93,6 +93,7 @@ ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 
 
 ## kriging 001 
+###1
 
 vgmUni=variogram(log(zinc)~sqrt(dist),alpha = c(0, 45, 90, 135), meuse)
 
@@ -102,9 +103,11 @@ k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
 k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 
 plot(vgmUni,vgmUK.fit )
+###2
 
 ## kriging 002 Universal kriging
 
+###1
 lm.model<-lm(log(zinc)~sqrt(dist),data=meuse)
 
 residual<-residuals(lm.model)
@@ -117,7 +120,7 @@ k22<- krige(log(zinc) ~ sqrt(dist), meuse, meuse.grid, model = vm.resid )
 k22_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k22$var1.pred)
 
 plot(v1.residual, vm.resid)
-
+###2
 
 ## kriging 003 OK
 
@@ -131,6 +134,7 @@ plot(v1.residual, vm.resid)
 
 
 # Fit variogram
+###1
 vgm5 <- variogram(log(zinc) ~ 1, meuse)
 vgm5.fit <- fit.variogram(vgm5, model = vgm(psill = 1, model = "Sph", range = 900, nugget = 1))
 
@@ -139,8 +143,9 @@ lzn.okriging <- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgm5.fit)
 
 # Extract predicted values
 kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
-
+###2
 # Plot using ggplot2
+###1
 ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
@@ -177,7 +182,7 @@ p4<-ggplot(k22_df, aes(x = x, y = y, fill = zinc_predicted)) +
 
 
 p1|p2|p3|p4
-
+###2
 
 
 # Calculate Kriging error

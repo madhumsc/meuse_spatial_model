@@ -10,13 +10,15 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+
 ## Load necessary libraries
 ```{r,warning=FALSE,message=FALSE}
 library(gstat)
 library(tidyverse)
 library(viridis)
-library(sp)
 library(sf)
+library(sp)
 library(stars)
 library(patchwork)
 library(ggplot2)
@@ -25,41 +27,172 @@ library(ggplot2)
 ##loads the dataset named "meuse" into the current R session.check the data type. show the head
 ```{r,warning=FALSE,message=FALSE}
 data(meuse)
-```
-
-
-```{r,warning=FALSE,message=FALSE}
-data(meuse)
 class(meuse)
 head(meuse)
 ```
 
-# Load necessary libraries
+
+##Convert the "meuse" dataset to a spatial feature object (sf) with coordinates "x" and "y".
 ```{r,warning=FALSE,message=FALSE}
-library(gstat)
-library(tidyverse)
-library(viridis)
-library(sp)
-library(sf)
-library(stars)
-library(patchwork)
-library(ggplot2)
-```
-```{r,warning=FALSE,message=FALSE}
-data(meuse)
-class(meuse)
-head(meuse)
+meuse_sf <- st_as_sf(meuse, coords = c("x", "y"))
 ```
 
-# Load necessary libraries
+# Plot using ggplot2 with adjusted parameters
+
+
 ```{r,warning=FALSE,message=FALSE}
-library(gstat)
-library(tidyverse)
-library(viridis)
-library(sp)
-library(sf)
-library(stars)
-library(patchwork)
-library(ggplot2)
+ggplot() +
+  geom_sf(data = meuse_sf, aes(color = zinc), size = 2, alpha = 0.7) +
+  scale_color_viridis() +
+  theme_minimal() + # reduce unnecessary clutter
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+        axis.title = element_text(size = 14))  +  # Adjust axis title size
+  labs(x = "X Coordinate", y = "Y Coordinate")  # Add axis labels
 ```
 
+##Load the "meuse.grid" dataset containing gridded environmental variables for spatial analysis and modeling.
+```{r,warning=FALSE,message=FALSE}
+data(meuse.grid)
+```
+
+
+## Set the spatial coordinates for "meuse.grid" dataset to columns "x" and "y".
+```{r,warning=FALSE,message=FALSE}
+coordinates(meuse) <- c("x", "y")
+coordinates(meuse.grid) <- c("x", "y")
+
+```
+
+# Perform Inverse Distance Weighting (IDW)
+
+```{r,warning=FALSE,message=FALSE}
+zinc.idw <- idw(zinc ~ 1, meuse, meuse.grid)
+```
+
+# Extract predicted values
+```{r,warning=FALSE,message=FALSE}
+zinc_idw_pred <- data.frame(coordinates(meuse.grid), zinc = zinc.idw$var1.pred)
+```
+
+# Convert to data.frame
+```{r,warning=FALSE,message=FALSE}
+zinc_idw_df <- as.data.frame(zinc_idw_pred)
+```
+
+# Plot using ggplot2
+# Plot using ggplot2 with aspect ratio adjustment
+```{r,warning=FALSE,message=FALSE}
+ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc") +
+  theme_minimal() +
+  coord_equal()
+```
+
+
+# Start Kriging.
+
+
+# prior to that just do some EDA to identify relationship in zinc disrtibution.
+
+```{r,warning=FALSE,message=FALSE}
+ggplot(meuse_sf,aes(y=zinc,x=dist))+geom_point()
+```
+
+```{r,warning=FALSE,message=FALSE}
+ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
+```
+
+
+## kriging 001 
+```{r,warning=FALSE,message=FALSE}
+
+vgmUni=variogram(log(zinc)~sqrt(dist),alpha = c(0, 45, 90, 135), meuse)
+
+vgmUK.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
+
+k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
+k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
+
+plot(vgmUni,vgmUK.fit )
+```
+
+## kriging 002 Universal kriging
+
+```{r,warning=FALSE,message=FALSE}
+lm.model<-lm(log(zinc)~sqrt(dist),data=meuse)
+
+residual<-residuals(lm.model)
+
+v1.residual <- variogram(residual~1,alpha = c(0, 45, 90, 135), meuse)
+
+vm.resid<- fit.variogram(v1.residual ,  model = vgm(1, "Sph", 900, 1))
+
+k22<- krige(log(zinc) ~ sqrt(dist), meuse, meuse.grid, model = vm.resid )
+k22_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k22$var1.pred)
+
+plot(v1.residual, vm.resid)
+```
+
+## kriging 003 OK
+
+#vgm1 = variogram(log(zinc)~1, meuse)
+#plot(variogram(log(zinc)~1, meuse, cloud=TRUE))
+
+#vgm1.fit = fit.variogram(vgm1, model = vgm(1, "Sph", 900, 1))
+# vgm1.fit
+
+# plot(vgm1, vgm1.fit)
+
+
+# Fit variogram
+```{r,warning=FALSE,message=FALSE}
+vgm5 <- variogram(log(zinc) ~ 1, meuse)
+vgm5.fit <- fit.variogram(vgm5, model = vgm(psill = 1, model = "Sph", range = 900, nugget = 1))
+
+# Perform kriging
+lzn.okriging <- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgm5.fit)
+
+# Extract predicted values
+kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
+```
+# Plot using ggplot2
+```{r,warning=FALSE,message=FALSE}
+ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc") +
+  theme_minimal()+
+  coord_equal()
+
+p1<-ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "IDW Predictions of Zinc") +
+  theme_minimal() +
+  coord_equal()
+p2<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "OK Kriged Predictions of Zinc") +
+  theme_minimal()+
+  coord_equal()
+
+p3<-ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "Universal kriging Predictions of Zinc") +
+  theme_minimal() +
+  coord_equal()
+
+p4<-ggplot(k22_df, aes(x = x, y = y, fill = zinc_predicted)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "regression Krigin Predictions of Zinc") +
+  theme_minimal()+
+  coord_equal()
+
+
+p1|p2|p3|p4
+```
