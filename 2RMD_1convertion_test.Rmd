@@ -1,0 +1,34 @@
+---
+title: '2'
+output: html_document
+date: "2024-03-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load necessary libraries
+```{r,warning=FALSE,message=FALSE}
+library(gstat)
+library(tidyverse)
+library(viridis)
+library(sp)
+library(sf)
+library(stars)
+library(patchwork)
+library(ggplot2)
+```
+
+##loads the dataset named "meuse" into the current R session.check the data type. show the head
+```{r,warning=FALSE,message=FALSE}
+data(meuse)
+```
+
+
+```{r,warning=FALSE,message=FALSE}
+data(meuse)
+class(meuse)
+head(meuse)
+```
+
