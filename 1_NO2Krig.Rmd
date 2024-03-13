@@ -34,13 +34,13 @@ no2 <- read_csv(system.file("external/no2.csv",
 
 ```
 
-# explore dataset
+## explore dataset
 Displaying the first three rows of the 'no2' dataset to get a quick overview of NO2 values
 ```{r,warning=FALSE,message=FALSE}
 head(data.frame(no2), 3)
 ```
 
-# change geom coodinates.
+## change geom coodinates.
 Transforming the 'no2' dataset into a spatial sf object with CRS set to EPSG:32632 for further geographic analysis
 
 ```{r,warning=FALSE,message=FALSE}
@@ -52,7 +52,7 @@ no2.sf
 ```
 
 
-# Read and transform spatial data, then plot it
+## Read and transform spatial data, then plot it
 ```{r,warning=FALSE,message=FALSE}
 map <- read_sf("de_nuts1.gpkg") |> st_transform(crs) 
 
@@ -61,9 +61,11 @@ ggplot() + geom_sf(data = map) +
   scale_color_viridis()
 ```
 
-# Prepare grid.
+## Prepare grid.
 
-## Grid preperation
+# IDW Interpolation.
+
+### Grid preperation
 Create a grid from bounding box of spatial data, with cell size 10,000, then crop it to spatial data extent
 ```{r,warning=FALSE,message=FALSE}
 grid <- st_bbox(map) |>
@@ -97,44 +99,33 @@ vcloud <- variogram(NO2~1, no2.sf, cloud=TRUE)
 
 ```
 
+## plot the variogram.
 ```{r,warning=FALSE,message=FALSE}
-ggplot(data=vcloud, aes(x=dist, y=gamma)) + geom_point()
-
-```
-
-```{r,warning=FALSE,message=FALSE}
-plot(vcloud)
 v2 <- variogram(NO2~1, no2.sf, cutoff = 100000, width = 10000)
 plot(v2, plot.numbers = TRUE, xlab = "distance h [m]",
      ylab = expression(gamma(h)),
      xlim = c(0, 1.055 * max(v2$dist)))
-
 ```
 
+## variogram values.
 ```{r,warning=FALSE,message=FALSE}
 vgm()
-
 ```
-
+## check all variogram for find a mapping.
 ```{r,warning=FALSE,message=FALSE}
 show.vgms(par.strip.text=list(cex=0.75))
 ```
 
+## fit the variogram.
 ```{r,warning=FALSE,message=FALSE}
 
 v1 <- variogram(NO2~1, no2.sf)
 v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
-
 plot(v1, v.m)
 
 ```
-
-```{r,warning=FALSE,message=FALSE}
-v1.ani <- variogram(NO2~1, alpha = c(0, 45, 90, 135), no2.sf)
-v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
-plot(v1.ani, v.m)
-plot(v1.ani)
-```
+## check for isotropiness
+As shown in the graph below, the patterns appear similar at all selected angles, leading us to assume that the dataset is isotropic
 
 ```{r,warning=FALSE,message=FALSE}
 v1.ani <- variogram(NO2~1, alpha = c(0, 45, 90, 135), no2.sf)
@@ -142,12 +133,17 @@ fit.ani <- vgm(psill=20, model = "Exp", range = 25000, nugget = 3, anis = c(30, 
 plot(v1.ani, fit.ani)
 ```
 
+## krigging.
+### krigin with v.m.
 ```{r,warning=FALSE,message=FALSE}
-v1 <- variogram(NO2~1, no2.sf)
-v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
 krigOK <- krige(NO2~1, no2.sf, grid, v.m)
 ```
+### krigin with fit.ani
+```{r,warning=FALSE,message=FALSE}
+krigOK2 <- krige(NO2~1, no2.sf, grid,fit.ani)
+```
 
+## plot the interpolated values with krigin.
 ```{r,warning=FALSE,message=FALSE}
 
 ggplot() + geom_stars(data =krigOK, 
