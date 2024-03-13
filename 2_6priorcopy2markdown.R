@@ -13,7 +13,7 @@ library(ggplot2)
 
 ##loads the dataset named "meuse" into the current R session.check the data type. show the head
 ###1
-data("meuse")
+data(meuse)
 class(meuse)
 head(meuse)
 ###2
@@ -45,7 +45,9 @@ data(meuse.grid)
 
 ## Set the spatial coordinates for "meuse.grid" dataset to columns "x" and "y".
 ###1
+coordinates(meuse) <- c("x", "y")
 coordinates(meuse.grid) <- c("x", "y")
+
 ###2
 
 # Perform Inverse Distance Weighting (IDW)
@@ -82,11 +84,11 @@ ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
 # prior to that just do some EDA to identify relationship in zinc disrtibution.
 
 ###1
-ggplot(meuse,aes(y=zinc,x=dist))+geom_point()
+ggplot(meuse_sf,aes(y=zinc,x=dist))+geom_point()
 ###2
 
 ###1
-ggplot(meuse,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
+ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 ###2
 
 
@@ -101,7 +103,7 @@ k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 
 plot(vgmUni,vgmUK.fit )
 
-## kriging 002
+## kriging 002 Universal kriging
 
 lm.model<-lm(log(zinc)~sqrt(dist),data=meuse)
 
@@ -155,21 +157,21 @@ p1<-ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
 p2<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "Kriged Predictions of Zinc") +
+  labs(fill = "Predicted Zinc",title = "OK Kriged Predictions of Zinc") +
   theme_minimal()+
   coord_equal()
 
-p3<-ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
+p3<-ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "IDW Predictions of Zinc") +
+  labs(fill = "Predicted Zinc",title = "Universal kriging Predictions of Zinc") +
   theme_minimal() +
   coord_equal()
 
-p4<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
+p4<-ggplot(k22_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "Kriged Predictions of Zinc") +
+  labs(fill = "Predicted Zinc",title = "regression Krigin Predictions of Zinc") +
   theme_minimal()+
   coord_equal()
 
