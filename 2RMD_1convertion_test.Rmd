@@ -1,7 +1,9 @@
 ---
 title: '2'
-output: html_document
-date: "2024-03-12"
+output:
+  html_document:
+    toc: true
+    theme: united
 ---
 
 ```{r setup, include=FALSE}
@@ -30,5 +32,34 @@ data(meuse)
 data(meuse)
 class(meuse)
 head(meuse)
+```
+
+# Load necessary libraries
+```{r,warning=FALSE,message=FALSE}
+library(gstat)
+library(tidyverse)
+library(viridis)
+library(sp)
+library(sf)
+library(stars)
+library(patchwork)
+library(ggplot2)
+```
+```{r,warning=FALSE,message=FALSE}
+data(meuse)
+class(meuse)
+head(meuse)
+```
+
+# Load necessary libraries
+```{r,warning=FALSE,message=FALSE}
+library(gstat)
+library(tidyverse)
+library(viridis)
+library(sp)
+library(sf)
+library(stars)
+library(patchwork)
+library(ggplot2)
 ```
 

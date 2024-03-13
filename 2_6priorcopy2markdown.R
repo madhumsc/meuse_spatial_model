@@ -43,59 +43,65 @@ data(meuse.grid)
 ###2
 
 
-# Convert to spatial objects
-coordinates(meuse) <- c("x", "y")
+## Set the spatial coordinates for "meuse.grid" dataset to columns "x" and "y".
+###1
 coordinates(meuse.grid) <- c("x", "y")
+###2
 
 # Perform Inverse Distance Weighting (IDW)
+
+###1
 zinc.idw <- idw(zinc ~ 1, meuse, meuse.grid)
-
-
-zinc.idw = idw(zinc~1, meuse, meuse.grid)
+###2
 
 # Extract predicted values
+###1
 zinc_idw_pred <- data.frame(coordinates(meuse.grid), zinc = zinc.idw$var1.pred)
+###2
 
 # Convert to data.frame
+###1
 zinc_idw_df <- as.data.frame(zinc_idw_pred)
+###2
 
 # Plot using ggplot2
 # Plot using ggplot2 with aspect ratio adjustment
+###1
 ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
   geom_tile() +
   scale_fill_viridis() +
   labs(fill = "Predicted Zinc") +
   theme_minimal() +
   coord_equal()
+###2
 
 
-vgm1 = variogram(log(zinc)~1, meuse)
+# Start Kriging.
 
 
-#ggplot(meuse,aes(y=zinc,x=dist))+geom_point()
+# prior to that just do some EDA to identify relationship in zinc disrtibution.
 
-#ggplot(meuse,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
+###1
+ggplot(meuse,aes(y=zinc,x=dist))+geom_point()
+###2
+
+###1
+ggplot(meuse,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
+###2
+
+
+## kriging 001 
 
 vgmUni=variogram(log(zinc)~sqrt(dist),alpha = c(0, 45, 90, 135), meuse)
 
 vgmUK.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
 
 k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
-
-
+k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 
 plot(vgmUni,vgmUK.fit )
 
-
-# v1.ani <- variogram(NO2~1, alpha = c(0, 45, 90, 135), no2.sf)
-# v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
-# plot(v1.ani, v.m)
-
-
-plot(vgmUni, vgmUK.fit)
-
-
-
+## kriging 002
 
 lm.model<-lm(log(zinc)~sqrt(dist),data=meuse)
 
@@ -105,32 +111,22 @@ v1.residual <- variogram(residual~1,alpha = c(0, 45, 90, 135), meuse)
 
 vm.resid<- fit.variogram(v1.residual ,  model = vgm(1, "Sph", 900, 1))
 
-
+k22<- krige(log(zinc) ~ sqrt(dist), meuse, meuse.grid, model = vm.resid )
+k22_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k22$var1.pred)
 
 plot(v1.residual, vm.resid)
 
 
+## kriging 003 OK
 
-#k22<- krige(log(zinc) ~ sqrt(dist), meuse, meuse.grid, model = vm.resid )
+#vgm1 = variogram(log(zinc)~1, meuse)
+#plot(variogram(log(zinc)~1, meuse, cloud=TRUE))
 
+#vgm1.fit = fit.variogram(vgm1, model = vgm(1, "Sph", 900, 1))
+# vgm1.fit
 
+# plot(vgm1, vgm1.fit)
 
-
-
-
-
-
-vgm1 = variogram(log(zinc)~1, meuse)
-plot(variogram(log(zinc)~1, meuse, cloud=TRUE))
-
-plot(vgm1)
-
-
-vgm1.fit = fit.variogram(vgm1, model = vgm(1, "Sph", 900, 1))
-vgm1.fit
-
-
-plot(vgm1, vgm1.fit)
 
 # Fit variogram
 vgm5 <- variogram(log(zinc) ~ 1, meuse)
@@ -163,7 +159,24 @@ p2<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   theme_minimal()+
   coord_equal()
 
-p1|p2
+p3<-ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "IDW Predictions of Zinc") +
+  theme_minimal() +
+  coord_equal()
+
+p4<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "Kriged Predictions of Zinc") +
+  theme_minimal()+
+  coord_equal()
+
+
+p1|p2|p3|p4
+
+
 
 # Calculate Kriging error
 kriging_error <- meuse$zinc - lzn.okriging$var1.pred
