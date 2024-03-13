@@ -1,5 +1,5 @@
 ---
-title: '2'
+title: 'Analysis of Kriging modeling of zinc in Meuse river'
 output:
   html_document:
     toc: true
@@ -193,6 +193,7 @@ p4<-ggplot(k22_df, aes(x = x, y = y, fill = zinc_predicted)) +
   theme_minimal()+
   coord_equal()
 
+ p1 + p2 + p3 + p4
 
-p1|p2|p3|p4
+
 ```
