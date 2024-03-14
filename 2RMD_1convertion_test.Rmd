@@ -10,7 +10,21 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Methodology
 
+Our analysis commenced with the exploration and preparation of the "Meuse" dataset using essential libraries such as gstat, tidyverse, viridis, sf, sp, stars, patchwork, and ggplot2. This step involved loading the dataset into the R session and inspecting its structure using class() and head() functions to ensure data integrity and gain initial insights into the variables.
+
+Subsequently, the "Meuse" dataset was converted into a spatial feature object (sf) using the st_as_sf() function, with spatial coordinates set to the columns "x" and "y". This transformation facilitated spatial analysis and visualization, enabling the plotting of the dataset using ggplot2 with adjusted parameters for enhanced readability and clarity.
+
+To further enrich our analysis, the "meuse.grid" dataset containing gridded environmental variables was loaded. Spatial coordinates for this dataset were also set to columns "x" and "y" using the coordinates() function, ensuring alignment with the "Meuse" dataset for subsequent spatial analysis and modeling tasks.
+
+Our analysis then proceeded with the implementation of interpolation techniques, starting with Inverse Distance Weighting (IDW). IDW was applied using the idw() function to estimate zinc concentrations across the study area. Predicted values were extracted and converted to a data frame for further analysis and visualization.
+
+Following IDW interpolation, kriging modeling was conducted to provide more sophisticated spatial predictions of zinc concentrations. Exploratory Data Analysis (EDA) was performed to identify relationships in the zinc distribution, guiding model selection and parameterization.
+
+Three kriging approaches were explored: Ordinary Kriging (OK), Universal Kriging, and Regression Kriging. Each approach involved variogram analysis, model fitting, and kriging prediction. Predicted values were plotted using ggplot2 for visual comparison and evaluation.
+
+Finally, the predictions from all kriging approaches and IDW interpolation were juxtaposed using patchwork to facilitate comparison and assessment of their performance in predicting zinc concentrations across the study area. This comprehensive methodology allowed for a thorough exploration and analysis of kriging modeling for zinc in the Meuse river region.
 
 ## Load necessary libraries
 ```{r,warning=FALSE,message=FALSE}

@@ -10,6 +10,15 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Methodology
+
+Our analysis initiated with the thorough exploration and preparation of the NO2 dataset using the necessary libraries, such as gstat, tidyverse, and others, ensuring data integrity and compatibility for subsequent analysis. This involved transforming the dataset into a spatial sf object and preprocessing administrative boundary data for spatial mapping and visualization purposes, thus laying a solid foundation for spatial analysis.
+
+Following data preparation, we delved into the application of two primary interpolation methods: Inverse Distance Weighting (IDW) and Kriging. IDW provided an initial estimation of NO2 values across the study area, offering a straightforward approach based on the weighted average of nearby observed values. However, recognizing the limitations of IDW, we proceeded to conduct variogram analysis to gain deeper insights into the spatial autocorrelation structure of NO2 concentrations.
+
+Variogram analysis played a pivotal role in our methodology by guiding the selection and calibration of appropriate kriging models. By fitting variogram models such as exponential, spherical, and Gaussian to experimental variograms, we aimed to capture the underlying spatial dependence and heterogeneity of NO2 concentrations accurately. Moreover, anisotropy analysis allowed us to evaluate assumptions regarding spatial correlation directionality, enhancing the robustness and accuracy of our interpolation models.
+
+The culmination of our analysis involved the visual comparison of interpolated NO2 values obtained from both IDW and kriging methods. This comparative analysis, informed by variogram insights, provided valuable feedback on the performance and reliability of each interpolation technique. By evaluating the spatial distribution and patterns of interpolated values, we gained deeper understanding and confidence in the efficacy of the chosen interpolation methods for NO2 concentration estimation in the study area.
 
 # Data Preparation
 
