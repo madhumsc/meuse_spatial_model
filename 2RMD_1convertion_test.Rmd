@@ -120,9 +120,10 @@ ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 
 
 ## kriging 001 
+
 ```{r,warning=FALSE,message=FALSE}
 
-vgmUni=variogram(log(zinc)~sqrt(dist),alpha = c(0, 45, 90, 135), meuse)
+vgmUni=variogram(log(zinc)~sqrt(dist), meuse)
 
 vgmUK.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
 
@@ -132,22 +133,6 @@ k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 plot(vgmUni,vgmUK.fit )
 ```
 
-## kriging 002 Universal kriging
-
-```{r,warning=FALSE,message=FALSE}
-lm.model<-lm(log(zinc)~sqrt(dist),data=meuse)
-
-residual<-residuals(lm.model)
-
-v1.residual <- variogram(residual~1,alpha = c(0, 45, 90, 135), meuse)
-
-vm.resid<- fit.variogram(v1.residual ,  model = vgm(1, "Sph", 900, 1))
-
-k22<- krige(log(zinc) ~ sqrt(dist), meuse, meuse.grid, model = vm.resid )
-k22_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k22$var1.pred)
-
-plot(v1.residual, vm.resid)
-```
 
 ## kriging 003 OK
 
@@ -200,14 +185,9 @@ p3<-ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
   theme_minimal() +
   coord_equal()
 
-p4<-ggplot(k22_df, aes(x = x, y = y, fill = zinc_predicted)) +
-  geom_tile() +
-  scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "regression Krigin Predictions of Zinc") +
-  theme_minimal()+
-  coord_equal()
 
- p1 + p2 + p3 + p4
+
+ p1 + p2 + p3 
 
 
 ```

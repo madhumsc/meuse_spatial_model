@@ -155,11 +155,7 @@ plot(v1.ani, fit.ani)
 ```{r,warning=FALSE,message=FALSE}
 krigOK <- krige(NO2~1, no2.sf, grid, v.m)
 ```
-### krigin with fit.ani
-Performing ordinary kriging using the fitted variogram model to estimate NO2 concentrations across the grid
-```{r,warning=FALSE,message=FALSE}
-krigOK2 <- krige(NO2~1, no2.sf, grid,fit.ani)
-```
+ 
 
 ## plot the interpolated values with krigin.
 Visualizing interpolated NO2 concentrations using kriging overlaid on the map with original data points
