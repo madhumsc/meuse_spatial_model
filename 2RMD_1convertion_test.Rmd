@@ -133,30 +133,56 @@ k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 plot(vgmUni,vgmUK.fit )
 ```
 
+# check isotropy
+```{r,warning=FALSE,message=FALSE}
+v1.ani <- variogram(log(zinc)~sqrt(dist), alpha = c(0, 45, 90, 135), meuse)
+fit.ani <- vgm(psill=.23, model = "Exp", range = 750, nugget = 0.06, anis = c(30, 10, 0, 0.5, 0.3))
+plot(v1.ani, fit.ani)
+```
 
-## kriging 003 OK
+# Plot prediction UK
+```{r,warning=FALSE,message=FALSE}
 
-#vgm1 = variogram(log(zinc)~1, meuse)
-#plot(variogram(log(zinc)~1, meuse, cloud=TRUE))
+ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
+  geom_tile() +
+  scale_fill_viridis() +
+  labs(fill = "Predicted Zinc",title = "Universal kriging Predictions of Zinc") +
+  theme_minimal() +
+  coord_equal()
 
-#vgm1.fit = fit.variogram(vgm1, model = vgm(1, "Sph", 900, 1))
-# vgm1.fit
+```
 
-# plot(vgm1, vgm1.fit)
-
+## kriging 002 OK
 
 # Fit variogram
 ```{r,warning=FALSE,message=FALSE}
-vgm5 <- variogram(log(zinc) ~ 1, meuse)
-vgm5.fit <- fit.variogram(vgm5, model = vgm(psill = 1, model = "Sph", range = 900, nugget = 1))
+vgm1 = variogram(log(zinc)~1, meuse)
+
+vgm1.fit = fit.variogram(vgm1, model = vgm(psill = 1, model = "Sph", range = 900, nugget = 1))
+plot(vgm1, vgm1.fit)
+```
+
+
+
+```{r,warning=FALSE,message=FALSE}
+# vgm5 <- variogram(log(zinc) ~ 1, meuse)
+# vgm5.fit <- fit.variogram(vgm5, model = vgm(psill = 1, model = "Sph", range = 900, nugget = 1))
 
 # Perform kriging
-lzn.okriging <- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgm5.fit)
+lzn.okriging <- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgm1.fit)
 
 # Extract predicted values
 kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
 ```
-# Plot using ggplot2
+# check isotropy
+```{r,warning=FALSE,message=FALSE}
+v2.ani <- variogram(log(zinc) ~ 1, alpha = c(0, 45, 90, 135), meuse)
+fit2.ani <- vgm(psill=1, model = "Exp", range = 750, nugget = 0.06, anis = c(30, 10, 0, 0.5, 0.3))
+plot(v2.ani, fit2.ani)
+```
+
+# Plot using OK
+kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
 ```{r,warning=FALSE,message=FALSE}
 ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
@@ -165,29 +191,6 @@ ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   theme_minimal()+
   coord_equal()
 
-p1<-ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
-  geom_tile() +
-  scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "IDW Predictions of Zinc") +
-  theme_minimal() +
-  coord_equal()
-p2<-ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
-  geom_tile() +
-  scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "OK Kriged Predictions of Zinc") +
-  theme_minimal()+
-  coord_equal()
-
-p3<-ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
-  geom_tile() +
-  scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "Universal kriging Predictions of Zinc") +
-  theme_minimal() +
-  coord_equal()
-
-
-
- p1 + p2 + p3 
 
 
 ```
