@@ -27,6 +27,7 @@ In conclusion, our study showcases the effectiveness of Spatial interpolation te
 # Exploring Zinc Concentrations in the Meuse Dataset: A Preliminary EDA Before Interpolation
 
 ## Load necessary libraries
+Before running this markdown, please install the following packages if not installed.
 ```{r,warning=FALSE,message=FALSE}
 library(gstat)
 library(tidyverse)
