@@ -66,6 +66,7 @@ meuse_sf <- st_as_sf(meuse, coords = c("x", "y"))
 
 ## Zinc Concentration Spatial Distribution in Meuse
 
+### map zinc spatiol distribution
 Geographical trends in zinc concentration distribution within the Meuse dataset reveal higher levels near the riverbank, gradually decreasing towards inland areas
 It has clear indication on relation ship with the distance to the river from river bank.
 ```{r,warning=FALSE,message=FALSE}
@@ -77,7 +78,8 @@ ggplot() +
         axis.title = element_text(size = 14))  +  # Adjust axis title size
   labs(x = "X Coordinate", y = "Y Coordinate")  # Add axis labels
 ```
-## Exploring Zinc Concentration with Distance
+
+### Exploring Zinc Concentration with Distance relationship
 
 Load the "meuse.grid" dataset containing gridded environmental variables for spatial analysis and modeling.
 ```{r,warning=FALSE,message=FALSE}
@@ -85,42 +87,51 @@ data(meuse.grid)
 coordinates(meuse) <- c("x", "y")
 coordinates(meuse.grid) <- c("x", "y")
 ```
+
+
 Set the spatial coordinates for "meuse.grid" dataset to columns "x" and "y".
-```{r,warning=FALSE,message=FALSE}
-
-
-```
-
-
+The distribution of zinc concentration with distance suggests a logarithmic trend
 
 ```{r,warning=FALSE,message=FALSE}
 ggplot(meuse_sf,aes(y=zinc,x=dist))+geom_point()
 ```
 
+further more we are using square root distance with the distancce then we can obain clear relationship as below chart.
 ```{r,warning=FALSE,message=FALSE}
 ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 ```
 
+# Interpolation with Universal krigin
+
+## Universal kriging
+
+
+## fitting variogram
+we further gig it with variogram analysis on that relationship in spacial pattern
 ```{r,warning=FALSE,message=FALSE}
 
 vgmUni=variogram(log(zinc)~sqrt(dist), meuse)
-
 vgmUK.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
-
-k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
-k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 
 plot(vgmUni,vgmUK.fit )
 ```
 
-# check isotropy
+```{r,warning=FALSE,message=FALSE}
+k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
+k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
+```
+## check isotropy
+
+check whether distribution is not vary across the different angels.we taken 0 , 45 , 135 rotations.
+it seems our variogram is fitted to the applide model. and we can assume that the this satisfied isotropy conditioon.
 ```{r,warning=FALSE,message=FALSE}
 v1.ani <- variogram(log(zinc)~sqrt(dist), alpha = c(0, 45, 90, 135), meuse)
 fit.ani <- vgm(psill=.23, model = "Exp", range = 750, nugget = 0.06, anis = c(30, 10, 0, 0.5, 0.3))
 plot(v1.ani, fit.ani)
 ```
 
-# Plot prediction UK
+## Plot prediction Universal kriging
+we now do the prediction with our above kringng model with interpolated values.
 ```{r,warning=FALSE,message=FALSE}
 
 ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
@@ -132,9 +143,11 @@ ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
 
 ```
 
-## kriging 002 OK
+#  Interpolation with Ordinary Kriging. - Dig more on krigin
 
-# Fit variogram
+## We further fit a kriging with Ordinary krigin for interpolation
+
+## Fit variogram with Ordinary kriging
 ```{r,warning=FALSE,message=FALSE}
 vgm1 = variogram(log(zinc)~1, meuse)
 
@@ -142,22 +155,24 @@ vgm1.fit = fit.variogram(vgm1, model = vgm(psill = 1, model = "Sph", range = 900
 plot(vgm1, vgm1.fit)
 ```
 
-# OK
+## model fit with Ordinary Kriging.
 ```{r,warning=FALSE,message=FALSE}
 lzn.okriging <- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgm1.fit)
 
 kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
 ```
-# check isotropy
+## check isotropy in Ordinary kriging
 ```{r,warning=FALSE,message=FALSE}
 v2.ani <- variogram(log(zinc) ~ 1, alpha = c(0, 45, 90, 135), meuse)
 fit2.ani <- vgm(psill=1, model = "Exp", range = 750, nugget = 0.06, anis = c(30, 10, 0, 0.5, 0.3))
 plot(v2.ani, fit2.ani)
 ```
 
-# Plot using OK map graph
-kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
+## Plot using Ordinary Kriging map graph
+
+
 ```{r,warning=FALSE,message=FALSE}
+kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
 ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
@@ -166,24 +181,28 @@ ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   coord_equal()
 ```
 
-# Perform Inverse Distance Weighting (IDW)
+#  Interpolation with Inverse Distance Weighting (IDW) Interpoliation spatially continous zinc distribution
 
+as with above interplication we futher interpolation do with the IDW with Interpoliation spatially continous zinc distribution
+
+## do IDW on zinc spacial continous distribution
 ```{r,warning=FALSE,message=FALSE}
 zinc.idw <- idw(zinc ~ 1, meuse, meuse.grid)
 ```
 
-# Extract predicted values
+Extract predicted values
+do the prediction with IDW method.
 ```{r,warning=FALSE,message=FALSE}
 zinc_idw_pred <- data.frame(coordinates(meuse.grid), zinc = zinc.idw$var1.pred)
 ```
 
-# Convert to data.frame
+Convert to data.frame
 ```{r,warning=FALSE,message=FALSE}
 zinc_idw_df <- as.data.frame(zinc_idw_pred)
 ```
 
-# Plot using ggplot2
-# Plot using ggplot2 with aspect ratio adjustment
+## Plot using ggplot2
+we draw graph with IDW interpolated method.
 ```{r,warning=FALSE,message=FALSE}
 ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
   geom_tile() +
