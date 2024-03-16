@@ -38,22 +38,36 @@ library(patchwork)
 library(ggplot2)
 ```
 
-##loads the dataset named "meuse" into the current R session.check the data type. show the head
+# Exploring Zinc Concentrations in the Meuse Dataset: A Preliminary EDA Before Interpolation
+
+loads the dataset named "meuse" into the current R session.check the data type. show the column content details.
 ```{r,warning=FALSE,message=FALSE}
 data(meuse)
-class(meuse)
+str(meuse)
 head(meuse)
 ```
 
+### Summary statistics for zinc
+The summary statistics for zinc concentrations in the Meuse dataset indicate a positively skewed distribution with a median of 326 µg/g and a mean of 469.7 µg/g, ranging from 113 µg/g to 1839 µg/g.
+```{r,warning=FALSE,message=FALSE}
+summary(meuse$zinc)
+```
 
-##Convert the "meuse" dataset to a spatial feature object (sf) with coordinates "x" and "y".
+### Boxplot of zinc concentrations
+The absence of extreme outliers in the boxplot suggests that the dataset is likely suitable for further analysis without the need for data adjustments.
+```{r,warning=FALSE,message=FALSE}
+boxplot(meuse$zinc, main = "Boxplot of Zinc Concentrations")
+```
+
+Convert the "meuse" dataset to a spatial feature object (sf) with coordinates "x" and "y".
 ```{r,warning=FALSE,message=FALSE}
 meuse_sf <- st_as_sf(meuse, coords = c("x", "y"))
 ```
 
-# Plot using ggplot2 with adjusted parameters
+## Zinc Concentration Spatial Distribution in Meuse
 
-
+Geographical trends in zinc concentration distribution within the Meuse dataset reveal higher levels near the riverbank, gradually decreasing towards inland areas
+It has clear indication on relation ship with the distance to the river from river bank.
 ```{r,warning=FALSE,message=FALSE}
 ggplot() +
   geom_sf(data = meuse_sf, aes(color = zinc), size = 2, alpha = 0.7) +
@@ -63,24 +77,21 @@ ggplot() +
         axis.title = element_text(size = 14))  +  # Adjust axis title size
   labs(x = "X Coordinate", y = "Y Coordinate")  # Add axis labels
 ```
+## Exploring Zinc Concentration with Distance
 
-##Load the "meuse.grid" dataset containing gridded environmental variables for spatial analysis and modeling.
+Load the "meuse.grid" dataset containing gridded environmental variables for spatial analysis and modeling.
 ```{r,warning=FALSE,message=FALSE}
 data(meuse.grid)
-```
-
-
-## Set the spatial coordinates for "meuse.grid" dataset to columns "x" and "y".
-```{r,warning=FALSE,message=FALSE}
 coordinates(meuse) <- c("x", "y")
 coordinates(meuse.grid) <- c("x", "y")
+```
+Set the spatial coordinates for "meuse.grid" dataset to columns "x" and "y".
+```{r,warning=FALSE,message=FALSE}
+
 
 ```
 
 
-
-
-# prior to that just do some EDA to identify relationship in zinc disrtibution.
 
 ```{r,warning=FALSE,message=FALSE}
 ggplot(meuse_sf,aes(y=zinc,x=dist))+geom_point()
