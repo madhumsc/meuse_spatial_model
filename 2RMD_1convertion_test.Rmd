@@ -14,20 +14,17 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Methodology
+In this study, we focused on understanding how zinc concentrations are distributed along the Meuse river using advanced spatial analysis techniques, particularly kriging methods. We began by thoroughly examining the Meuse dataset to understand its structure and content, which provided the foundation for our analysis. Through exploratory data analysis (EDA), we gained valuable insights into the distribution patterns of zinc concentrations, using techniques like calculating summary statistics and creating visualizations such as boxplots and spatial maps.
 
-Our analysis commenced with the exploration and preparation of the "Meuse" dataset using essential libraries such as gstat, tidyverse, viridis, sf, sp, stars, patchwork, and ggplot2. This step involved loading the dataset into the R session and inspecting its structure using class() and head() functions to ensure data integrity and gain initial insights into the variables.
+Once we grasped the nature of the data, we transitioned to spatial data preparation, transforming the dataset into a spatial feature object. This step enabled us to capture the spatial relationships inherent in the data, essential for subsequent analyses, especially kriging.
 
-Subsequently, the "Meuse" dataset was converted into a spatial feature object (sf) using the st_as_sf() function, with spatial coordinates set to the columns "x" and "y". This transformation facilitated spatial analysis and visualization, enabling the plotting of the dataset using ggplot2 with adjusted parameters for enhanced readability and clarity.
+For the core of our analysis, we employed three primary Spatial interpolation techniques: Inverse Distance Weighting (IDW), Ordinary Kriging (OK), and Universal Kriging. These methods, particularly OK and Universal Kriging, offer sophisticated approaches to spatial interpolation, considering both spatial autocorrelation and a deterministic trend. We meticulously fine-tuned these kriging models, fitting variogram models and validating their performance to ensure accurate predictions.
 
-To further enrich our analysis, the "meuse.grid" dataset containing gridded environmental variables was loaded. Spatial coordinates for this dataset were also set to columns "x" and "y" using the coordinates() function, ensuring alignment with the "Meuse" dataset for subsequent spatial analysis and modeling tasks.
+The pinnacle of our study was the prediction and mapping of zinc concentrations across the Meuse river region using kriging. Leveraging the power of kriging, we generated detailed maps depicting spatially continuous predictions of zinc levels. These maps not only provided insights into the spatial variability of zinc concentrations but also highlighted potential hotspots and areas of environmental concern along the river.
 
-Our analysis then proceeded with the implementation of interpolation techniques, starting with Inverse Distance Weighting (IDW). IDW was applied using the idw() function to estimate zinc concentrations across the study area. Predicted values were extracted and converted to a data frame for further analysis and visualization.
+In conclusion, our study showcases the effectiveness of Spatial interpolation techniques in analyzing and predicting spatial variations in zinc concentrations. By integrating advanced spatial analysis methods like kriging into our study, we were able to extract meaningful insights, contributing to a better understanding of environmental dynamics in the Meuse river region.
 
-Following IDW interpolation, kriging modeling was conducted to provide more sophisticated spatial predictions of zinc concentrations. Exploratory Data Analysis (EDA) was performed to identify relationships in the zinc distribution, guiding model selection and parameterization.
-
-Three kriging approaches were explored: Ordinary Kriging (OK), Universal Kriging, and Regression Kriging. Each approach involved variogram analysis, model fitting, and kriging prediction. Predicted values were plotted using ggplot2 for visual comparison and evaluation.
-
-Finally, the predictions from all kriging approaches and IDW interpolation were juxtaposed using patchwork to facilitate comparison and assessment of their performance in predicting zinc concentrations across the study area. This comprehensive methodology allowed for a thorough exploration and analysis of kriging modeling for zinc in the Meuse river region.
+# Exploring Zinc Concentrations in the Meuse Dataset: A Preliminary EDA Before Interpolation
 
 ## Load necessary libraries
 ```{r,warning=FALSE,message=FALSE}
@@ -40,9 +37,7 @@ library(stars)
 library(patchwork)
 library(ggplot2)
 ```
-
-# Exploring Zinc Concentrations in the Meuse Dataset: A Preliminary EDA Before Interpolation
-
+## Load Meuse dataset and display its structure and first few row
 loads the dataset named "meuse" into the current R session.check the data type. show the column content details.
 ```{r,warning=FALSE,message=FALSE}
 data(meuse)
@@ -106,7 +101,7 @@ ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 
 # Interpolation with Universal krigin
 
-## fitting variogram
+## Fitting variogram
 we further gig it with variogram analysis on that relationship in spacial pattern
 ```{r,warning=FALSE,message=FALSE}
 
@@ -121,7 +116,7 @@ plot(vgmUni,vgmUK.fit )
 k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
 k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 ```
-## check isotropy
+## Check isotropy
 
 check whether distribution is not vary across the different angels.we taken 0 , 45 , 135 rotations.
 it seems our variogram is fitted to the applide model. and we can assume that the this satisfied isotropy conditioon.
@@ -144,7 +139,7 @@ ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
 
 ```
 
-#  Interpolation with Ordinary Kriging. - Dig more on krigin
+#  Interpolation with Ordinary Kriging. 
 We further fit a kriging with Ordinary krigin for interpolation
 
 ## Fit variogram with Ordinary kriging
@@ -155,13 +150,13 @@ vgm1.fit = fit.variogram(vgm1, model = vgm(psill = 1, model = "Sph", range = 900
 plot(vgm1, vgm1.fit)
 ```
 
-## model fit with Ordinary Kriging.
+## Model fit with Ordinary Kriging.
 ```{r,warning=FALSE,message=FALSE}
 lzn.okriging <- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgm1.fit)
 
 kriged_df <- data.frame(coordinates(meuse.grid), zinc_predicted = lzn.okriging$var1.pred)
 ```
-## check isotropy in Ordinary kriging
+## Check isotropy in Ordinary kriging
 ```{r,warning=FALSE,message=FALSE}
 v2.ani <- variogram(log(zinc) ~ 1, alpha = c(0, 45, 90, 135), meuse)
 fit2.ani <- vgm(psill=1, model = "Exp", range = 750, nugget = 0.06, anis = c(30, 10, 0, 0.5, 0.3))
@@ -185,7 +180,7 @@ ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
 
 as with above interplication we futher interpolation do with the IDW with Interpoliation spatially continous zinc distribution
 
-## do IDW on zinc spacial continous distribution
+## IDW on zinc spacial continous distribution
 ```{r,warning=FALSE,message=FALSE}
 zinc.idw <- idw(zinc ~ 1, meuse, meuse.grid)
 ```
