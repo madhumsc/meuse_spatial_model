@@ -143,6 +143,7 @@ v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1)
 plot(v1, v.m)
 
 ```
+
 ## check for isotropiness
 As shown in the graph below, the patterns appear similar at all selected angles, leading us to assume that the dataset is isotropic
 
