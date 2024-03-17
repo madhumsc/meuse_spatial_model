@@ -18,7 +18,7 @@ In this study, we focused on understanding how zinc concentrations are distribut
 
 Once we grasped the nature of the data, we transitioned to spatial data preparation, transforming the dataset into a spatial feature object. This step enabled us to capture the spatial relationships inherent in the data, essential for subsequent analyses, especially kriging.
 
-For the core of our analysis, we employed three primary Spatial interpolation techniques: Inverse Distance Weighting (IDW), Ordinary Kriging (OK), and Universal Kriging. These methods, particularly OK and Universal Kriging, offer sophisticated approaches to spatial interpolation, considering both spatial autocorrelation and a deterministic trend. We meticulously fine-tuned these kriging models, fitting variogram models and validating their performance to ensure accurate predictions.
+For the core of our analysis, we employed three primary Spatial interpolation techniques: Inverse Distance Weighting (IDW), Ordinary Kriging (OK), and Regression Kriging. These methods, particularly OK and Regression Kriging, offer sophisticated approaches to spatial interpolation, considering both spatial autocorrelation and a deterministic trend. We meticulously fine-tuned these kriging models, fitting variogram models and validating their performance to ensure accurate predictions.
 
 The pinnacle of our study was the prediction and mapping of zinc concentrations across the Meuse river region using kriging. Leveraging the power of kriging, we generated detailed maps depicting spatially continuous predictions of zinc levels. These maps not only provided insights into the spatial variability of zinc concentrations but also highlighted potential hotspots and areas of environmental concern along the river.
 
@@ -100,21 +100,21 @@ further more we are using square root distance with the distancce then we can ob
 ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 ```
 
-# Interpolation with Universal krigin
+# Interpolation with Regression krigin
 
 ## Fitting variogram
 we further gig it with variogram analysis on that relationship in spacial pattern
 ```{r,warning=FALSE,message=FALSE}
 
 vgmUni=variogram(log(zinc)~sqrt(dist), meuse)
-vgmUK.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
+vgmRegression.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
 
-plot(vgmUni,vgmUK.fit )
+plot(vgmUni,vgmRegression.fit )
 ```
 
-## Prediction with Universal kriging
+## Prediction with Regression kriging
 ```{r,warning=FALSE,message=FALSE}
-k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmUK.fit )
+k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmRegression.fit )
 k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
 ```
 ## Check isotropy
@@ -127,14 +127,14 @@ fit.ani <- vgm(psill=.23, model = "Exp", range = 750, nugget = 0.06, anis = c(30
 plot(v1.ani, fit.ani)
 ```
 
-## Plot prediction Universal kriging
+## Plot prediction Regression kriging
 we now do the prediction with our above kringng model with interpolated values.
 ```{r,warning=FALSE,message=FALSE}
 
 ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
-  labs(fill = "Predicted Zinc",title = "Universal kriging Predictions of Zinc") +
+  labs(fill = "Predicted Zinc",title = "Regression kriging Predictions of Zinc") +
   theme_minimal() +
   coord_equal()
 
@@ -210,9 +210,9 @@ ggplot(zinc_idw_df, aes(x = x, y = y, fill = zinc)) +
 
 # Concluton
 
-In this analysis of zinc concentrations in the Meuse river region, we employed various spatial interpolation techniques to predict zinc levels across the area. Our exploration began with an examination of the Meuse dataset, revealing spatial patterns in zinc distribution. We then conducted Inverse Distance Weighting (IDW), Ordinary Kriging (OK), and Universal Kriging to interpolate zinc concentrations.
+In this analysis of zinc concentrations in the Meuse river region, we employed various spatial interpolation techniques to predict zinc levels across the area. Our exploration began with an examination of the Meuse dataset, revealing spatial patterns in zinc distribution. We then conducted Inverse Distance Weighting (IDW), Ordinary Kriging (OK), and Regression Kriging to interpolate zinc concentrations.
 
-Through exploratory data analysis (EDA) and variogram analysis, we identified spatial relationships and fitted appropriate models for kriging. The resulting kriging predictions provided detailed maps of zinc concentrations, showcasing higher levels near the riverbank and gradual decreases inland. We also compared the performance of each interpolation method, noting the strengths and limitations of IDW, OK, and Universal Kriging in capturing spatial variations in zinc levels.
+Through exploratory data analysis (EDA) and variogram analysis, we identified spatial relationships and fitted appropriate models for kriging. The resulting kriging predictions provided detailed maps of zinc concentrations, showcasing higher levels near the riverbank and gradual decreases inland. We also compared the performance of each interpolation method, noting the strengths and limitations of IDW, OK, and Regression Kriging in capturing spatial variations in zinc levels.
 
 Overall, our analysis demonstrates the utility of kriging techniques in predicting spatially continuous environmental variables like zinc concentrations. By leveraging spatial relationships and variogram modeling, kriging methods offer valuable insights into pollutant distribution patterns, aiding environmental monitoring and management efforts in the Meuse river region and similar areas.
 
