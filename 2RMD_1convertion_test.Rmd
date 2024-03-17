@@ -127,6 +127,13 @@ fit.ani <- vgm(psill=.23, model = "Exp", range = 750, nugget = 0.06, anis = c(30
 plot(v1.ani, fit.ani)
 ```
 
+## Variogram map
+with this map we can say that mean is distribute slightly eaqually in all directions.
+```{r,warning=FALSE,message=FALSE}
+vgm.map <- variogram(log(zinc)~sqrt(dist), meuse, cutoff = 1500, width = 100, map = TRUE)
+plot(vgm.map, threshold = 5)
+```
+
 ## Plot prediction Regression kriging
 we now do the prediction with our above kringng model with interpolated values.
 ```{r,warning=FALSE,message=FALSE}
@@ -139,6 +146,7 @@ ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
   coord_equal()
 
 ```
+
 ## Validation with cross validations.
 ```{r,warning=FALSE,message=FALSE}
 k11.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgmRegression.fit)
@@ -174,6 +182,13 @@ fit2.ani <- vgm(psill=1, model = "Exp", range = 750, nugget = 0.06, anis = c(30,
 plot(v2.ani, fit2.ani)
 ```
 
+## Variogram map
+with this map we can say that mean is distribute slightly eaqually in all directions.
+```{r,warning=FALSE,message=FALSE}
+vgm2.map <- variogram(log(zinc) ~ 1, meuse, cutoff = 1500, width = 100, map = TRUE)
+plot(vgm2.map, threshold = 5)
+```
+
 ## Plot using Ordinary Kriging map graph
 
 
@@ -197,6 +212,7 @@ lzn.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgm1.fit)
 rmseOK <- round(sqrt(mean(lzn.okriging.cv$residual^2)), 2)
 rmseOK
 ```
+
 
 
 #  Interpolation with Inverse Distance Weighting (IDW)
