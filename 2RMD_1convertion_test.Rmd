@@ -146,7 +146,8 @@ k11.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgmRegression.fit)
 ```
 ### RMSE in Regression Kriging
 ```{r,warning=FALSE,message=FALSE}
-round(sqrt(mean(k11.okriging.cv$residual^2)), 2)
+rmseRK <- round(sqrt(mean(k11.okriging.cv$residual^2)), 2)
+rmseRK
 ```
 
 #  Interpolation with Ordinary Kriging. 
@@ -193,7 +194,8 @@ lzn.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgm1.fit)
 ```
 ### RMSE in Ordinary Kriging.
 ```{r,warning=FALSE,message=FALSE}
-round(sqrt(mean(lzn.okriging.cv$residual^2)), 2)
+rmseOK <- round(sqrt(mean(lzn.okriging.cv$residual^2)), 2)
+rmseOK
 ```
 
 
@@ -238,9 +240,9 @@ Overall, our analysis demonstrates the utility of kriging techniques in predicti
 
 Further more we have validate which kriging method more accurate based on RMSE(Root Mean square error). 
 
-| Kriging  Type    | RMSE    |
-|------------------|---------|
-|Regression Kriging| 0.42    |
-|Ordinary Kriging  | 0.39    |
+| Kriging  Type    | RMSE         |
+|------------------|--------------|
+|Regression Kriging| `r rmseRK`   |
+|Ordinary Kriging  | `r rmseOK`   |
 
 It seems that both Ordinary Kriging and Regression Kriging have nearly equal RMSE values. Therefore, we can assume that both methods are equally good for spatial interpolation zinc concentrations.

@@ -633,7 +633,8 @@ interpolated values.</p>
 <div id="rmse-in-regression-kriging" class="section level3" number="3.4.1">
 <h3><span class="header-section-number">3.4.1</span> RMSE in Regression
 Kriging</h3>
-<pre class="r"><code>round(sqrt(mean(k11.okriging.cv$residual^2)), 2)</code></pre>
+<pre class="r"><code>rmseRK &lt;- round(sqrt(mean(k11.okriging.cv$residual^2)), 2)
+rmseRK</code></pre>
 <pre><code>## [1] 0.42</code></pre>
 </div>
 </div>
@@ -685,7 +686,8 @@ validations Ordinary kriging</h2>
 <div id="rmse-in-ordinary-kriging." class="section level3" number="4.5.1">
 <h3><span class="header-section-number">4.5.1</span> RMSE in Ordinary
 Kriging.</h3>
-<pre class="r"><code>round(sqrt(mean(lzn.okriging.cv$residual^2)), 2)</code></pre>
+<pre class="r"><code>rmseOK &lt;- round(sqrt(mean(lzn.okriging.cv$residual^2)), 2)
+rmseOK</code></pre>
 <pre><code>## [1] 0.39</code></pre>
 </div>
 </div>
