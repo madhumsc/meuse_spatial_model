@@ -728,7 +728,8 @@ krig.ok.cv </code></pre>
 <div id="rmse-in-ordinary-kriging." class="section level2" number="5.2">
 <h2><span class="header-section-number">5.2</span> RMSE in Ordinary
 Kriging.</h2>
-<pre class="r"><code>round(sqrt(mean(krig.ok.cv$residual^2)), 2)</code></pre>
+<pre class="r"><code>rmseOK &lt;- round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+rmseOK</code></pre>
 <pre><code>## [1] 3.87</code></pre>
 </div>
 </div>
@@ -777,7 +778,8 @@ Validation</h2>
 <p>Here we got lesser RMSE than ordinary kriging. seem this
 interpolation more accureate than above kriging model.</p>
 <p>RMSE in Regression Kriging:</p>
-<pre class="r"><code>round(sqrt(mean(krig.ok.cv$residual^2)), 2)</code></pre>
+<pre class="r"><code>rmseRK &lt;- round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+rmseRK</code></pre>
 <pre><code>## [1] 2.97</code></pre>
 </div>
 </div>
