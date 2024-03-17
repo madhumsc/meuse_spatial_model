@@ -128,7 +128,7 @@ plot(v1.ani, fit.ani)
 ```
 
 ## Variogram map
-With this, we can also say that the mean is distributed slightly equally in all directions.
+with this map we can say that mean is distribute slightly eaqually in all directions.
 ```{r,warning=FALSE,message=FALSE}
 vgm.map <- variogram(log(zinc)~sqrt(dist), meuse, cutoff = 1500, width = 100, map = TRUE)
 plot(vgm.map, threshold = 5)
@@ -183,7 +183,7 @@ plot(v2.ani, fit2.ani)
 ```
 
 ## Variogram map
-With this, we can also say that the mean is distributed slightly equally in all directions.
+with this map we can say that mean is distribute slightly eaqually in all directions.
 ```{r,warning=FALSE,message=FALSE}
 vgm2.map <- variogram(log(zinc) ~ 1, meuse, cutoff = 1500, width = 100, map = TRUE)
 plot(vgm2.map, threshold = 5)

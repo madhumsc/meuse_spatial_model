@@ -1,0 +1,245 @@
+---
+title: "Exploring Kriging Models for Interpolating NO2 Values"
+author:
+- -D.G.P. Madhushanka (MSC-DSA-098)
+output:
+  html_document:
+    toc: true
+    theme: united
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Methodology
+
+Our analysis initiated with the thorough exploration and preparation of the NO2 dataset using the necessary libraries, such as gstat, tidyverse, and others, ensuring data integrity and compatibility for subsequent analysis. This involved transforming the dataset into a spatial sf object and preprocessing administrative boundary data for spatial mapping and visualization purposes, thus laying a solid foundation for spatial analysis.
+
+Following data preparation, we delved into the application of two primary interpolation methods: Inverse Distance Weighting (IDW) and Kriging. IDW provided an initial estimation of NO2 values across the study area, offering a straightforward approach based on the weighted average of nearby observed values. However, recognizing the limitations of IDW, we proceeded to conduct variogram analysis to gain deeper insights into the spatial autocorrelation structure of NO2 concentrations.
+
+Variogram analysis played a pivotal role in our methodology by guiding the selection and calibration of appropriate kriging models. By fitting variogram models such as exponential, spherical, and Gaussian to experimental variograms, we aimed to capture the underlying spatial dependence and heterogeneity of NO2 concentrations accurately. Moreover, anisotropy analysis allowed us to evaluate assumptions regarding spatial correlation directionality, enhancing the robustness and accuracy of our interpolation models.
+
+The culmination of our analysis involved the visual comparison of interpolated NO2 values obtained from both IDW and kriging methods. This comparative analysis, informed by variogram insights, provided valuable feedback on the performance and reliability of each interpolation technique. By evaluating the spatial distribution and patterns of interpolated values, we gained deeper understanding and confidence in the efficacy of the chosen interpolation methods for NO2 concentration estimation in the study area.
+
+# Data Preparation
+
+## load libraries
+Using essential spatial analysis libraries for NO2 interpolation: gstat, tidyverse, viridis, sf, stars, and patchwork
+```{r,warning=FALSE,message=FALSE}
+
+library(gstat)
+library(tidyverse)
+library(viridis)
+library(sf)
+library(stars)
+library(patchwork)
+
+```
+
+## Load dataset.
+Reading NO2 data from CSV file using gstat package's built-in dataset loader.
+```{r,warning=FALSE,message=FALSE}
+no2 <- read_csv(system.file("external/no2.csv", 
+                            package = "gstat"), show_col_types = FALSE)
+
+
+```
+
+## explore dataset
+Displaying the first three rows of the 'no2' dataset to get a quick overview of NO2 values
+```{r,warning=FALSE,message=FALSE}
+head(data.frame(no2), 3)
+```
+
+## change geom coodinates.
+Transforming the 'no2' dataset into a spatial sf object with CRS set to EPSG:32632 for further geographic analysis
+
+```{r,warning=FALSE,message=FALSE}
+crs <- st_crs("EPSG:32632")
+no2.sf <- st_as_sf(no2, crs = "OGC:CRS84", coords = 
+                     c("station_longitude_deg", "station_latitude_deg")) |>
+  st_transform(crs) 
+no2.sf
+```
+
+
+## Read and transform spatial data, then plot it
+Visualizing spatial data overlaid with NO2 concentrations on a map after transforming the coordinate reference system
+```{r,warning=FALSE,message=FALSE}
+map <- read_sf("de_nuts1.gpkg") |> st_transform(crs) 
+
+ggplot() + geom_sf(data = map) + 
+  geom_sf(data = no2.sf, mapping = aes(col = NO2)) + 
+  scale_color_viridis()
+```
+
+## Prepare grid.
+
+# IDW Interpolation.
+
+### Grid preperation
+Creating a grid based on the bounding box of the map, converting it to stars format with a cell size of 10,000, and then cropping it to match the map extent
+```{r,warning=FALSE,message=FALSE}
+grid <- st_bbox(map) |>
+  st_as_stars(dx = 10000) |> st_crop(map) 
+grid
+```
+
+## Plot interpolated values
+Performing Inverse Distance Weighting (IDW) interpolation on NO2 data to estimate values across the grid, visualizing the interpolated values overlaid on the map alongside original data points
+```{r,warning=FALSE,message=FALSE}
+interpolated.values <- idw(NO2~1, no2.sf, grid)
+
+ggplot() + geom_stars(data = interpolated.values, 
+                      aes(fill = var1.pred, x = x, y = y)) + 
+  geom_sf(data = st_cast(map, "MULTILINESTRING")) + 
+  geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
+
+```
+Side-by-side comparison of NO2 concentrations on a map using ggplot2, showcasing original data points and interpolated values."
+```{r,warning=FALSE,message=FALSE}
+p1 <- ggplot() + geom_sf(data = map) +  geom_sf(data = no2.sf, mapping = aes(col = NO2)) + scale_color_viridis()
+p2 <- ggplot() + geom_stars(data = interpolated.values, 
+                            aes(fill = var1.pred, x = x, y = y)) + geom_sf(data = st_cast(map, "MULTILINESTRING")) + geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
+p1|p2
+```
+
+# Ordinary Kriging
+
+## Variogram creation
+Creating a variogram cloud to analyze spatial autocorrelation of NO2 concentrations.
+```{r,warning=FALSE,message=FALSE}
+vcloud <- variogram(NO2~1, no2.sf, cloud=TRUE)
+
+```
+
+## plot the variogram.
+Generating a variogram with a specified cutoff distance and width, visualizing spatial autocorrelation of NO2 concentrations.
+```{r,warning=FALSE,message=FALSE}
+v2 <- variogram(NO2~1, no2.sf, cutoff = 100000, width = 10000)
+plot(v2, plot.numbers = TRUE, xlab = "distance h [m]",
+     ylab = expression(gamma(h)),
+     xlim = c(0, 1.055 * max(v2$dist)))
+```
+
+## variogram values.
+Listing available variogram models for fitting.
+```{r,warning=FALSE,message=FALSE}
+vgm()
+```
+## check all variogram for find a mapping.
+Displaying a visual representation of available variogram models for fitting, with adjusted text size.
+```{r,warning=FALSE,message=FALSE}
+show.vgms(par.strip.text=list(cex=0.75))
+```
+
+## fit the variogram.
+Fitting an exponential variogram model to the empirical variogram and visualizing the fit.
+```{r,warning=FALSE,message=FALSE}
+
+v1 <- variogram(NO2~1, no2.sf)
+v.m <- fit.variogram(v1, vgm(psill=20, model = "Exp", range = 20000, nugget = 1))
+plot(v1, v.m)
+
+```
+
+## check for isotropiness
+As shown in the graph below, the patterns appear similar at all selected angles, leading us to assume that the dataset is isotropic
+
+```{r,warning=FALSE,message=FALSE}
+v1.ani <- variogram(NO2~1, alpha = c(0, 45, 90, 135), no2.sf)
+fit.ani <- vgm(psill=20, model = "Exp", range = 25000, nugget = 3, anis = c(30, 10, 0, 0.5, 0.3))
+plot(v1.ani, fit.ani)
+```
+
+## krigging.
+### krigin with v.m.
+```{r,warning=FALSE,message=FALSE}
+krigOK <- krige(NO2~1, no2.sf, grid, v.m)
+```
+ 
+
+## plot the interpolated values with krigin.
+Visualizing interpolated NO2 concentrations using kriging overlaid on the map with original data points
+```{r,warning=FALSE,message=FALSE}
+
+ggplot() + geom_stars(data =krigOK, 
+                      aes(fill = var1.pred, x = x, y = y)) + 
+  geom_sf(data = st_cast(map, "MULTILINESTRING")) + 
+  geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
+```
+
+# Validation.
+
+## Cross validation and RMSE.
+```{r,warning=FALSE,message=FALSE}
+krig.ok.cv <- krige.cv(NO2~1, no2.sf, v.m)
+krig.ok.cv 
+```
+
+## RMSE in Ordinary Kriging.
+```{r,warning=FALSE,message=FALSE}
+rmseOK <- round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+rmseOK
+```
+# Regression Kriging
+
+## Relationship identification
+With below graph we can identified there is a liner relationship with NO2 with station_altitude.
+```{r,warning=FALSE,message=FALSE}
+plot( no2.sf$station_altitude, no2.sf$NO2)
+```
+
+## Fit Variogram
+we plot the variogram for above identified pattern.
+
+```{r,warning=FALSE,message=FALSE}
+v.rk <- variogram(NO2~station_altitude, no2.sf)
+plot(v.rk)
+```
+
+## Isotropy assumption
+Below variogram matches in the directions of 0, 45, 90, and 135 degrees, and it's safe to assume that the variation is constant in all directions, then we can conclude that there is isotropy. Therefore, we can proceed with modeling using kriging.
+```{r,warning=FALSE,message=FALSE}
+v1.ani.rk <- variogram(NO2~station_altitude, alpha = c(0, 45, 90, 135), no2.sf)
+v.m.rk <- fit.variogram(v1.ani.rk, vgm(psill=15, model = "Exp", range = 20000, nugget = 1))
+plot(v1.ani.rk, v.m.rk)
+```
+
+## Kriging width Regression
+As the model is isotropy and we apply that Regression and do the kriging for interpolation
+```{r,warning=FALSE,message=FALSE}
+v.m.rk <- fit.variogram(v.rk, vgm(psill=15, model = "Exp", range = 20000, nugget = 1))
+plot(v1, v.m)
+krig.ok.cv <- krige.cv(NO2~station_altitude, no2.sf,v.m.rk)
+
+```
+
+## Regression Kriging Validation
+Here we got lesser RMSE than ordinary kriging. seem this interpolation more accureate than above kriging model.
+
+RMSE in Regression Kriging:
+```{r,warning=FALSE,message=FALSE}
+rmseRK <- round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+rmseRK
+```
+
+# Conclution
+In conclusion, our exploration of Kriging interpolation, informed by variogram analysis, has yielded valuable insights into spatial modeling techniques for estimating NO2 concentrations. The meticulous data preparation process, which included transforming the dataset into spatial objects and conducting variogram analysis, laid a robust foundation for accurate interpolation.
+
+Through variogram analysis, we gained a deeper understanding of the spatial autocorrelation structure of NO2 concentrations, which guided the selection and calibration of appropriate Kriging models. The comparison between different variogram models, such as exponential, spherical, and Gaussian, allowed us to capture the underlying spatial dependence and heterogeneity more accurately.
+
+The application of Kriging interpolation, both isotropic and anisotropic, demonstrated its superiority in capturing spatial variability compared to simpler methods like IDW. By integrating variogram insights into the Kriging process, we were able to produce more reliable estimates of NO2 concentrations across the study area.
+
+In summary, this study underscores the significance of advanced spatial modeling techniques, particularly Kriging informed by variogram analysis, in environmental research. These methods provide a powerful framework for assessing air quality parameters like NO2 concentrations with greater accuracy and precision, enabling informed decision-making and policy formulation to address air pollution challenges effectively. 
+Further we have validate our kriging models with RMSE values.
+
+| Kriging  Type    | RMSE     |
+|------------------|----------|
+|Regression Kriging|`r rmseRK`  |
+|Ordinary Kriging  |`r rmseOK`|
+
+
+It seems that both  Regression Kriging have relatively better than Ordinary Kriging as RMSE value is less in Regression Kriging.
+Therefore, we can assume that Regression Kriging  methods good slitly better for spatial interpolation NO2 concentrations than Ordinary Kriging.
