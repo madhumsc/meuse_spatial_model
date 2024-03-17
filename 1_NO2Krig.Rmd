@@ -105,7 +105,7 @@ p2 <- ggplot() + geom_stars(data = interpolated.values,
 p1|p2
 ```
 
-# Kriging 
+# Ordinary Kriging
 
 ## Variogram creation
 Creating a variogram cloud to analyze spatial autocorrelation of NO2 concentrations.
@@ -177,9 +177,51 @@ ggplot() + geom_stars(data =krigOK,
 krig.ok.cv <- krige.cv(NO2~1, no2.sf, v.m)
 krig.ok.cv 
 ```
+
 ## RMSE in Ordinary Kriging.
 ```{r,warning=FALSE,message=FALSE}
 round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+```
+# Regression Kriging
+
+## Relationship identification
+With below graph we can identified there is a liner relationship with NO2 with station_altitude.
+```{r,warning=FALSE,message=FALSE}
+plot( no2.sf$station_altitude, no2.sf$NO2)
+```
+
+## Fit Variogram
+we plot the variogram for above identified pattern.
+
+```{r,warning=FALSE,message=FALSE}
+v.rk <- variogram(NO2~station_altitude, no2.sf)
+plot(v.rk)
+```
+
+## Isotropy assumption
+Below variogram matches in the directions of 0, 45, 90, and 135 degrees, and it's safe to assume that the variation is constant in all directions, then we can conclude that there is isotropy. Therefore, we can proceed with modeling using kriging.
+```{r,warning=FALSE,message=FALSE}
+v1.ani.rk <- variogram(NO2~station_altitude, alpha = c(0, 45, 90, 135), no2.sf)
+v.m.rk <- fit.variogram(v1.ani.rk, vgm(psill=15, model = "Exp", range = 20000, nugget = 1))
+plot(v1.ani.rk, v.m.rk)
+```
+
+## Kriging width Regression
+As the model is isotropy and we apply that Regression and do the kriging for interpolation
+```{r,warning=FALSE,message=FALSE}
+v.m.rk <- fit.variogram(v.rk, vgm(psill=15, model = "Exp", range = 20000, nugget = 1))
+plot(v1, v.m)
+krig.ok.cv <- krige.cv(NO2~station_altitude, no2.sf,v.m.rk)
+
+```
+
+## Regression Kriging Validation
+Here we got lesser RMSE than ordinary kriging. seem this interpolation more accureate than above kriging model.
+
+RMSE in Regression Kriging:
+```{r,warning=FALSE,message=FALSE}
+round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+
 ```
 
 # Conclution
