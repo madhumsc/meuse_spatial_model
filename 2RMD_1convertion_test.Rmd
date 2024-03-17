@@ -139,6 +139,15 @@ ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
   coord_equal()
 
 ```
+## Validation with cross validations.
+```{r,warning=FALSE,message=FALSE}
+k11.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgmRegression.fit)
+
+```
+### RMSE in Regression Kriging
+```{r,warning=FALSE,message=FALSE}
+round(sqrt(mean(k11.okriging.cv$residual^2)), 2)
+```
 
 #  Interpolation with Ordinary Kriging. 
 We further fit a kriging with Ordinary krigin for interpolation
@@ -176,6 +185,17 @@ ggplot(kriged_df, aes(x = x, y = y, fill = zinc_predicted)) +
   theme_minimal()+
   coord_equal()
 ```
+
+## Validation with cross validations Ordinary kriging
+```{r,warning=FALSE,message=FALSE}
+lzn.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgm1.fit)
+
+```
+### RMSE in Ordinary Kriging.
+```{r,warning=FALSE,message=FALSE}
+round(sqrt(mean(lzn.okriging.cv$residual^2)), 2)
+```
+
 
 #  Interpolation with Inverse Distance Weighting (IDW)
 
