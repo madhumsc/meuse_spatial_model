@@ -154,7 +154,7 @@ plot(v1.ani, fit.ani)
 ```
 
 ## krigging.
-### krigin with v.m.
+
 ```{r,warning=FALSE,message=FALSE}
 krigOK <- krige(NO2~1, no2.sf, grid, v.m)
 ```
@@ -170,9 +170,7 @@ ggplot() + geom_stars(data =krigOK,
   geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
 ```
 
-# Validation.
-
-## Cross validation and RMSE.
+## Validation-Cross validation and RMSE.
 ```{r,warning=FALSE,message=FALSE}
 krig.ok.cv <- krige.cv(NO2~1, no2.sf, v.m)
 krig.ok.cv 

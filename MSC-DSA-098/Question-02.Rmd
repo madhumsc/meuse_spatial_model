@@ -114,8 +114,8 @@ plot(vgmRegression,vgmRegression.fit )
 
 ## Prediction with Regression kriging
 ```{r,warning=FALSE,message=FALSE}
-k11<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmRegression.fit )
-k11_df <- data.frame(coordinates(meuse.grid), zinc_predicted = k11$var1.pred)
+rKrig<- krige(log(zinc) ~ 1, meuse, meuse.grid, model = vgmRegression.fit )
+rKrig_df <- data.frame(coordinates(meuse.grid), zinc_predicted = rKrig$var1.pred)
 ```
 ## Check isotropy
 
@@ -138,7 +138,7 @@ plot(vgm.map, threshold = 5)
 we now do the prediction with our above kringng model with interpolated values.
 ```{r,warning=FALSE,message=FALSE}
 
-ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
+ggplot(rKrig_df, aes(x = x, y = y, fill = zinc_predicted)) +
   geom_tile() +
   scale_fill_viridis() +
   labs(fill = "Predicted Zinc",title = "Regression kriging Predictions of Zinc") +
@@ -149,12 +149,12 @@ ggplot(k11_df, aes(x = x, y = y, fill = zinc_predicted)) +
 
 ## Validation with cross validations.
 ```{r,warning=FALSE,message=FALSE}
-k11.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgmRegression.fit)
+rKrig.okriging.cv <- krige.cv(log(zinc) ~ 1, meuse, model = vgmRegression.fit)
 
 ```
 ### RMSE in Regression Kriging
 ```{r,warning=FALSE,message=FALSE}
-rmseRK <- round(sqrt(mean(k11.okriging.cv$residual^2)), 2)
+rmseRK <- round(sqrt(mean(rKrig.okriging.cv$residual^2)), 2)
 rmseRK
 ```
 
