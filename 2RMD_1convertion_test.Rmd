@@ -106,10 +106,10 @@ ggplot(meuse_sf,aes(y=log(zinc),x=sqrt(dist)))+geom_point()
 we further gig it with variogram analysis on that relationship in spacial pattern
 ```{r,warning=FALSE,message=FALSE}
 
-vgmUni=variogram(log(zinc)~sqrt(dist), meuse)
-vgmRegression.fit = fit.variogram(vgmUni,  model = vgm(1, "Sph", 900, 1))
+vgmRegression=variogram(log(zinc)~sqrt(dist), meuse)
+vgmRegression.fit = fit.variogram(vgmRegression,  model = vgm(1, "Sph", 900, 1))
 
-plot(vgmUni,vgmRegression.fit )
+plot(vgmRegression,vgmRegression.fit )
 ```
 
 ## Prediction with Regression kriging
@@ -236,3 +236,11 @@ Through exploratory data analysis (EDA) and variogram analysis, we identified sp
 
 Overall, our analysis demonstrates the utility of kriging techniques in predicting spatially continuous environmental variables like zinc concentrations. By leveraging spatial relationships and variogram modeling, kriging methods offer valuable insights into pollutant distribution patterns, aiding environmental monitoring and management efforts in the Meuse river region and similar areas.
 
+Further more we have validate which kriging method more accurate based on RMSE(Root Mean square error). 
+
+| Kriging  Type    | RMSE    |
+|------------------|---------|
+|Regression Kriging| 0.42    | 
+|Ordinary Kriging  | 0.39    | 
+
+It seems that both Ordinary Kriging and Regression Kriging have nearly equal RMSE values. Therefore, we can assume that both methods are equally good for spatial interpolation zinc concentrations.
