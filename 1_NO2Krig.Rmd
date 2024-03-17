@@ -169,6 +169,18 @@ ggplot() + geom_stars(data =krigOK,
   geom_sf(data = no2.sf, col="red") + scale_fill_viridis() 
 ```
 
+# Validation.
+
+## Cross validation and RMSE.
+```{r,warning=FALSE,message=FALSE}
+krig.ok.cv <- krige.cv(NO2~1, no2.sf, v.m)
+krig.ok.cv 
+```
+## RMSE in Ordinary Kriging.
+```{r,warning=FALSE,message=FALSE}
+round(sqrt(mean(krig.ok.cv$residual^2)), 2)
+```
+
 # Conclution
 In conclusion, our exploration of Kriging interpolation, informed by variogram analysis, has yielded valuable insights into spatial modeling techniques for estimating NO2 concentrations. The meticulous data preparation process, which included transforming the dataset into spatial objects and conducting variogram analysis, laid a robust foundation for accurate interpolation.
 
